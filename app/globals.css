@@ -1241,8 +1241,14 @@ body {
     height: 40px;
   }
   .send {
-    width: 42px;
-    height: 42px;
+    /* Was 42px — a real-device check (headless Chromium at an iPhone-width
+       viewport) measured it and flagged the miss; the icon-btn rule right
+       above it was already correctly at 44 and this one was not. It is the
+       primary action in the composer — send, or advance the conversation —
+       so it gets the full guideline rather than the smaller size given to
+       the deliberately-quiet mute and delete controls below. */
+    width: 44px;
+    height: 44px;
   }
   .history-delete {
     width: 38px;
