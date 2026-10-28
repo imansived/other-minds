@@ -639,13 +639,18 @@ body {
   min-height: 0;
   overflow-y: auto;
   display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 8px 20px 32px;
 }
 .landing-inner {
   width: 100%;
   max-width: 860px;
+  /* Centred with auto margins rather than align-items/justify-content on the
+     container. Those centre even when the content is TALLER than the screen,
+     which pushes the top of it above the scroll origin where nothing can reach
+     it — on a short laptop the title was cut off and could not be scrolled to.
+     Auto margins centre while there is room and fall to zero when there is
+     not, so the top is always where scrolling starts. */
+  margin: auto;
   /* Flex items refuse to shrink past their content by default; without this
      a long word or a wide cap pushes the whole column off-screen. */
   min-width: 0;
@@ -1694,5 +1699,152 @@ body {
   .reply-chip {
     transition: none !important;
     animation: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Starting questions — for the blank box
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Quiet on purpose: plain lines of text in a hairline frame, nothing that reads
+   as a menu. They are there to be noticed by someone who is stuck, and to be
+   ignored by someone who isn't. */
+.starters {
+  margin: 18px 0 0;
+  /* The same short rise the messages use, so they arrive with the page rather
+     than snapping in after it. 'backwards', not 'both': 'both' keeps holding the
+     last keyframe (opacity 1) after it ends, and an animation outranks ordinary
+     rules — so it would silently override the opacity:0 that folds this away. */
+  animation: settle-in 0.7s ease-out 0.25s backwards;
+  /* Folds shut when the person starts typing. A grid row going from 1fr to 0fr
+     is how a height of 'auto' gets animated; the page re-centres a little on
+     every frame of it, so it glides instead of jumping. */
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    margin-top 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+.starters.away {
+  grid-template-rows: 0fr;
+  margin-top: 0;
+  opacity: 0;
+}
+/* overflow:hidden is what lets the row fold to nothing, and it would also clip
+   a keyboard focus ring (2px wide, 2px off). The padding gives the ring room
+   inside the clip; the negative margin takes that room back from the layout. */
+.starters-inner {
+  min-height: 0;
+  overflow: hidden;
+  padding: 4px;
+  margin: -4px;
+}
+.starters-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0 4px 8px;
+}
+.starters-label {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  color: var(--muted-2);
+}
+.starters-more {
+  padding: 2px 4px;
+  border: none;
+  background: none;
+  font-family: var(--ui);
+  font-size: 0.68rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+.starters-more:hover {
+  color: var(--muted-2);
+}
+.starters ul {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.starter {
+  width: 100%;
+  padding: 9px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  background: transparent;
+  text-align: left;
+  font-family: var(--speech);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--muted-2);
+  cursor: pointer;
+  transition:
+    color 0.3s ease,
+    border-color 0.3s ease,
+    background-color 0.3s ease;
+}
+.starter:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--introspector) 38%, var(--hairline));
+  background: color-mix(in srgb, var(--introspector) 5%, transparent);
+}
+
+/* Short screens. The landing is a single screen, and the questions are the part
+   that can give. These steps come from measuring the real page, not from
+   guessing (the content needs ~611px of height with two questions and ~569px
+   with one, plus the landing's own padding):
+   - up to 800px  two questions, not three
+   - up to 760px  the spacing closes up a little, and the bottom padding eases
+   - up to 680px  one question
+   - up to 610px  none: the box is what matters on a window this short
+   'show others' stays one click away wherever any are shown. */
+@media (min-width: 721px) and (max-height: 800px) {
+  .starters li:nth-child(3) {
+    display: none;
+  }
+}
+@media (min-width: 721px) and (max-height: 760px) {
+  .landing {
+    padding-bottom: 12px;
+  }
+  .landing-inner {
+    gap: 22px;
+  }
+  .mind-card {
+    padding: 18px 18px 16px;
+  }
+  .starters {
+    margin-top: 12px;
+  }
+  .starter {
+    padding: 7px 14px;
+  }
+}
+@media (min-width: 721px) and (max-height: 680px) {
+  .starters li:nth-child(2) {
+    display: none;
+  }
+}
+@media (min-width: 721px) and (max-height: 610px) {
+  .starters {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .starters {
+    animation: none;
+    transition: none;
+  }
+  .starter,
+  .starters-more {
+    transition: none;
   }
 }
