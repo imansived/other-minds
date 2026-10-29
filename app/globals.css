@@ -1848,3 +1848,184 @@ body {
     transition: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   The door — said once, to someone who has never been here
+   ═══════════════════════════════════════════════════════════════════════════ */
+.door {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 24px 20px;
+  /* Transparent on purpose: the room behind is hidden while the door is up
+     (see below), so what shows is the sky alone — the sky the room opens onto. */
+  animation: door-in 1.1s ease-out backwards;
+  transition:
+    opacity 0.9s ease,
+    visibility 0s linear 0.9s;
+}
+.door.leaving {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+@keyframes door-in {
+  from { opacity: 0; }
+}
+
+.door-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  max-width: 30rem;
+  text-align: center;
+}
+.door-name {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+
+/* Three of them, awake — each breathing on its own count so they never
+   settle into a single pulse. */
+.door-minds {
+  display: flex;
+  gap: 22px;
+}
+.door-mind {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 18px 2px var(--c);
+  opacity: 0.35;
+  animation: door-breathe var(--d) ease-in-out infinite;
+}
+.door-mind.m-introspector { --c: var(--introspector); --d: 5.2s; }
+.door-mind.m-behaviorist { --c: var(--behaviorist); --d: 6.7s; animation-delay: -2.1s; }
+.door-mind.m-gardener { --c: var(--gardener); --d: 4.6s; animation-delay: -3.4s; }
+@keyframes door-breathe {
+  50% { opacity: 0.95; transform: scale(1.18); }
+}
+
+.door-line {
+  margin: 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.45rem, 4.4vw, 2.1rem);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-wrap: balance;
+  animation: settle-in 1.2s ease-out 0.5s backwards;
+}
+.door-line span {
+  display: inline-block;
+}
+
+.door-go {
+  margin-top: 6px;
+  padding: 10px 30px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline);
+  background: transparent;
+  color: var(--muted-2);
+  font: inherit;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  animation: settle-in 1.2s ease-out 1.1s backwards;
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease;
+}
+.door-go:hover:not(:disabled),
+.door-go:focus-visible {
+  color: var(--text);
+  border-color: var(--muted-2);
+  background: var(--raised);
+}
+
+.door-credit {
+  flex: none;
+  margin: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  animation: settle-in 1.2s ease-out 1.5s backwards;
+}
+.door-credit span {
+  color: var(--muted-2);
+}
+
+/* The way back to the door, in the corner where nothing else is. */
+.about-link {
+  margin-left: auto;
+  padding: 6px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+.about-link:hover,
+.about-link:focus-visible {
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .door,
+  .door-line,
+  .door-go,
+  .door-credit {
+    animation: none;
+    transition: none;
+  }
+  .door-mind {
+    animation: none;
+    opacity: 0.8;
+  }
+}
+
+/* Before we know whether this is a first visit, hold the room back — a
+   stranger must never glimpse the landing before the door. */
+.door-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--bg);
+}
+
+/* The room waits out of sight while the door is up, and arrives as it leaves. */
+.app > .sidebar,
+.app > .main {
+  transition: opacity 0.9s ease;
+}
+.app[data-door="pending"] > .sidebar,
+.app[data-door="pending"] > .main,
+.app[data-door="shown"] > .sidebar,
+.app[data-door="shown"] > .main {
+  opacity: 0;
+  visibility: hidden; /* also takes it out of the tab order */
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app > .sidebar,
+  .app > .main {
+    transition: none;
+  }
+}

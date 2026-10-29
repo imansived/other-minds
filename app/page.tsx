@@ -12,6 +12,7 @@ import AgentRow from "@/app/components/AgentRow";
 import Avatar from "@/app/components/Avatar";
 import Composer from "@/app/components/Composer";
 import GalaxyBackground from "@/app/components/GalaxyBackground";
+import Door from "@/app/components/Door";
 import Landing from "@/app/components/Landing";
 import { ReplyChip, UserMessage } from "@/app/components/Quote";
 import Sidebar from "@/app/components/Sidebar";
@@ -50,6 +51,9 @@ import {
 // The composing indicator stays up for at least this long even if the API
 // returns instantly — a brief deliberate pause reads better than a text dump.
 const MIN_COMPOSE_MS = 1200;
+
+// Remembered in this browser only: whether the door has been walked through.
+const DOOR_KEY = "other-minds:door-seen";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -129,6 +133,10 @@ export default function Home() {
   // Bumped each time a reply starts, so the box takes the cursor.
   const [focusSignal, setFocusSignal] = useState(0);
 
+  // The door: said once to a first-time visitor, and again from "about".
+  // "pending" holds the room back until we know which this is.
+  const [door, setDoor] = useState<"pending" | "shown" | "leaving" | "gone">("pending");
+
   // The mind a failed turn was meant to be, and how long the transcript was
   // when it failed. See runTurn.
   const retryRef = useRef<{ agent: AgentId; length: number } | null>(null);
@@ -145,6 +153,27 @@ export default function Home() {
     if (!atFootRef.current) return;
     anchorRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [transcript, composingAgent]);
+
+  useEffect(() => {
+    let seen = false;
+    try {
+      seen = window.localStorage.getItem(DOOR_KEY) === "1";
+    } catch {
+      // Storage blocked: treat as a first visit, every time. Better a door
+      // too many than a stranger dropped in with no idea where they are.
+    }
+    setDoor(seen ? "gone" : "shown");
+  }, []);
+
+  function enterRoom() {
+    try {
+      window.localStorage.setItem(DOOR_KEY, "1");
+    } catch {
+      // Not remembered; the door will simply greet them again next time.
+    }
+    setDoor("leaving");
+    window.setTimeout(() => setDoor("gone"), 950);
+  }
 
   // Read saved conversations — and whether the room is meant to be silent —
   // once, on the client.
@@ -453,8 +482,12 @@ export default function Home() {
   }
 
   return (
-    <div className="app" data-mood={mood ?? "none"}>
+    <div className="app" data-mood={mood ?? "none"} data-door={door}>
       <GalaxyBackground />
+      {door === "pending" && <div className="door-veil" />}
+      {(door === "shown" || door === "leaving") && (
+        <Door leaving={door === "leaving"} onEnter={enterRoom} />
+      )}
 
       <Sidebar
         conversations={history}
@@ -475,7 +508,7 @@ export default function Home() {
         />
       )}
 
-      <main className="main">
+      <main className="main" inert={door === "pending" || door === "shown"}>
         {/* Chrome: history toggle and a way back to a blank room. Nothing about
             who is speaking — the conversation says that itself. */}
         <header className="topbar">
@@ -497,6 +530,14 @@ export default function Home() {
             >
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
+          </button>
+
+          <button
+            type="button"
+            className="about-link"
+            onClick={() => setDoor("shown")}
+          >
+            about
           </button>
 
           <button
